@@ -15,12 +15,12 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'requests==2.9.1',
+    'requests[security]==2.9.1',
     'beautifulsoup4==4.4.1',
-    'Click',
+    'Click==6.3',
     'pytimeparse==1.1.5',
-    'Pillow',
-    'html5lib',
+    'Pillow==3.1.1',
+    'html5lib==0.9999999',
 ]
 
 test_requirements = [
