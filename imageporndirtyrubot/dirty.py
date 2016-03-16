@@ -5,7 +5,6 @@ import requests
 from imageporndirtyrubot.exception import APIException
 
 DIRTY_API_PATH = 'https://dirty.ru/api'
-# DIRTY_API_PATH = 'http://d3.dev/api'
 MAX_PER_PAGE = 42
 
 
@@ -112,7 +111,6 @@ def get_last_domain_posts(domain_prefix, auth_headers=None, time_inverval=None, 
 
 def upload_image(file_name, auth_headers=None):
     """Upload image and return Media Data dict"""
-    print("BB")
     return raw_request(
         '/images', 'post',
         headers=auth_headers,
@@ -122,7 +120,6 @@ def upload_image(file_name, auth_headers=None):
 
 def create_comment(post_id, body, media_id=None, parent_id=None, auth_headers=None):
     """Create comment on given post"""
-    print("AAAA")
     return raw_request(
         '/posts/{}/comments/'.format(post_id), 'post',
         data={
