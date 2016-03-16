@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 from io import BytesIO
 from string import Template
 
@@ -13,11 +12,24 @@ from imageporndirtyrubot.dirty import DirtyCantLoginException
 from imageporndirtyrubot.google import GoogleCaptchaAPIException
 
 
+DEFAULT_TEMPLATE = u"""\
+Я нашел картинку лучшего качества: <a href="url">${image_url}</a> (${width} x ${height}, {size} kB)
+<img src="${image_url}">
+Это сообщение опубликовано <a href="https://github.com/ilyatikhonov/imageporndirtyrubot">роботом</a>, который призван помочь найти картинки лучшего качества.
+"""
+
+
 def find_and_post_higher_resolution_images(
-    username, password, domain, template,
+    username, password, domain, template_path,
     limit, time_limit, min_rating, max_size,
     min_increase, skip_posts_with_my_comments
 ):
+
+    if template_path:
+        with open(template_path, 'r') as f:
+            template = Template(f.read())
+    else:
+        template = Template(DEFAULT_TEMPLATE)
 
     min_increase = 1 + min_increase/100.0
 
@@ -25,7 +37,7 @@ def find_and_post_higher_resolution_images(
     latest_domain_posts = dirty.get_last_domain_posts(
         domain,
         auth_headers=dirty_auth,
-        time_inverval=time_limit, # TODO NOT WORKING
+        time_inverval=time_limit,
         limit=limit,
         threshold_rating=min_rating
     )
@@ -63,6 +75,10 @@ def find_and_post_higher_resolution_images(
             if my_comment_found:
                 continue
 
+        if not media:
+            print '>>', post
+            continue
+
         new_image_url, new_image_size = google.find_higher_resolution_image(
             media.get('url'),
             min_width=media.get('width') * min_increase,
@@ -98,19 +114,12 @@ def find_and_post_higher_resolution_images(
               help="Skip posts where current user already made a comment")
 @click.option('-v', '--verbose', count=True)
 def imageporndirtyrubot(username, password, domain, **options):
-    template_path = options.get('template_path')
-    if not template_path:
-        template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'comment.tpl')
-
-    with open(template_path, 'r') as f:
-        template = Template(f.read())
-
     try:
         find_and_post_higher_resolution_images(
             username=username,
             password=password,
             domain=domain,
-            template=template,
+            template_path=options.get('template_path'),
             limit=options.get('limit'),
             time_limit=options.get('time_limit'),
             min_rating=options.get('min_rating'),

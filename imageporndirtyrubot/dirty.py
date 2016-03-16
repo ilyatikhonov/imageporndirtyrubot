@@ -1,8 +1,7 @@
-from datetime import datetime
-
+import time
 import requests
-
 from imageporndirtyrubot.exception import APIException
+
 
 DIRTY_API_PATH = 'https://dirty.ru/api'
 MAX_PER_PAGE = 42
@@ -96,7 +95,7 @@ def get_auth_headers(username, password):
 def get_last_domain_posts(domain_prefix, auth_headers=None, time_inverval=None, limit=100, threshold_rating=None):
     date_limit = None
     if time_inverval:
-        date_limit = int(datetime.utcnow().strftime("%s")) - int(time_inverval)
+        date_limit = int(time.time()) - int(time_inverval)
 
     return unpaginate_raw_request(
         uri='/domains/{}/posts/'.format(domain_prefix),
