@@ -1,14 +1,13 @@
+# -*- coding: utf-8 -*-
 import time
+
 import requests
-from imageporndirtyrubot.exception import APIException
+
+from imageporndirtyrubot.exception import APIException, DirtyCantLoginException
 
 
 DIRTY_API_PATH = 'https://dirty.ru/api'
 MAX_PER_PAGE = 42
-
-
-class DirtyCantLoginException(APIException):
-    pass
 
 
 def raw_request(uri, method, querystring=None, data=None, headers=None, **requests_options):
@@ -35,7 +34,9 @@ def raw_request(uri, method, querystring=None, data=None, headers=None, **reques
         response.raise_for_status()
         return response.json()
     except requests.exceptions.HTTPError as e:
-        raise APIException('Dirty API Error: {}'.format(str(e)), http_code=e.response.status_code)
+        if e.response.status_code == 403:
+            raise DirtyCantLoginException
+        raise APIException('что-то не так пошло в dirty')
 
 
 def unpaginate_raw_request(collection_name, limit, date_limit=None, *args, **kwargs):
@@ -69,23 +70,7 @@ def unpaginate_raw_request(collection_name, limit, date_limit=None, *args, **kwa
 
 
 def get_auth_headers(username, password):
-    """
-
-    Raises: DirtyCantLogin, APIException
-    Args:
-        username:
-        password:
-
-    Returns:
-
-    """
-    try:
-        response = raw_request('/auth/login/', 'post', data={'username': username, 'password': password})
-    except APIException as e:
-        if e.http_code == 403:
-            raise DirtyCantLoginException()
-        raise e
-
+    response = raw_request('/auth/login/', 'post', data={'username': username, 'password': password})
     return {
         'X-Futuware-UID': response['uid'],
         'X-Futuware-SID': response['sid']

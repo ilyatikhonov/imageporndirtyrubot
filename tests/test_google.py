@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from imageporndirtyrubot.exception import APIException
-from imageporndirtyrubot.google import find_higher_resolution_image, GoogleCaptchaAPIException
+from imageporndirtyrubot.exception import APIException, GoogleCaptchaAPIException
+from imageporndirtyrubot.google import find_higher_resolution_image
+from imageporndirtyrubot.exceptions import GoogleCaptchaAPIException
 
 TEST_IMAGE_URL = 'https://v1.std3.ru/500/90/fb/1455805029-90fb57f390b071bb67f72ab8da875afa.jpeg'
 

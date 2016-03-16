@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-
 import random
 
-from imageporndirtyrubot.exception import APIException
+from imageporndirtyrubot.exception import APIException, GoogleCaptchaAPIException
 
 try:
     import urlparse
@@ -26,12 +25,8 @@ USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.101 Safari/537.36',
 ]
 
-GOOGLE_BASE_URL = 'http://www.google.com/'
+GOOGLE_BASE_URL = 'https://www.google.com/'
 GOOGLE_SEARCH_BY_ENDPOINT = 'http://images.google.com/searchbyimage?hl=en&image_url={}'
-
-
-class GoogleCaptchaAPIException(APIException):
-    pass
 
 
 def raw_request(url, referer):
@@ -51,13 +46,14 @@ def raw_request(url, referer):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        raise APIException('Google Exception: {}'.format(str(e)), http_code=e.response.status_code)
+        print url
+        raise APIException('что-то пошло не так в гугле')
 
     soup = BeautifulSoup(response.content, 'html5lib')
 
     # check for Fucking Google Captcha
     if soup.find_all('input', {'name': 'captcha'}):
-        raise GoogleCaptchaAPIException()
+        raise GoogleCaptchaAPIException
 
     return soup
 

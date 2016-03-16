@@ -9,11 +9,10 @@ from PIL import Image
 
 from imageporndirtyrubot import dirty, google
 from imageporndirtyrubot.dirty import DirtyCantLoginException
-from imageporndirtyrubot.google import GoogleCaptchaAPIException
-
+from imageporndirtyrubot.exception import APIException, GoogleCaptchaAPIException, DirtyCantLoginException
 
 DEFAULT_TEMPLATE = u"""\
-Я нашел картинку лучшего качества: <a href="url">${image_url}</a> (${width} x ${height}, {size} kB)
+Я нашел картинку лучшего качества: <a href="${image_url}">url</a> (${width} x ${height}, ${size} kB)
 <img src="${image_url}">
 Это сообщение опубликовано <a href="https://github.com/ilyatikhonov/imageporndirtyrubot">роботом</a>, который призван помочь найти картинки лучшего качества.
 """
@@ -75,10 +74,6 @@ def find_and_post_higher_resolution_images(
             if my_comment_found:
                 continue
 
-        if not media:
-            print '>>', post
-            continue
-
         new_image_url, new_image_size = google.find_higher_resolution_image(
             media.get('url'),
             min_width=media.get('width') * min_increase,
@@ -96,6 +91,7 @@ def find_and_post_higher_resolution_images(
             height=new_image_size[1]
         )
         dirty.create_comment(post['id'], comment_body, auth_headers=dirty_auth)
+        click.secho('[готово] {}.dirty.ru/{}-{}'.format(post['domain']['prefix'], post['url_slug'], post['id']), fg='green')
 
 
 @click.command()
@@ -127,11 +123,5 @@ def imageporndirtyrubot(username, password, domain, **options):
             min_increase=options.get('min_increase'),
             skip_posts_with_my_comments=options.get('skip_commented')
         )
-    except DirtyCantLoginException:
-        show_error('Incorrect username or password')
-    except GoogleCaptchaAPIException:
-        show_error('Google asks for CAPTCHA, try to open http://www.google.com in your browser')
-
-
-def show_error(msg):
-    click.secho(msg, err=True, fg='red')
+    except APIException as e:
+        click.secho(str(e), err=True, fg='red')
