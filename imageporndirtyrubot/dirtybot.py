@@ -88,7 +88,7 @@ def find_and_post_higher_resolution_images(
 @click.option('-d', '--domain', prompt=True)
 @click.option('-t', '--template_path', type=click.Path(dir_okay=False, exists=True))
 @click.option('-l', '--limit',  default=100, type=click.IntRange(min=1))
-@click.option('-c', '--time_limit', default='24h', callback=lambda c, x: pytimeparse.parse(x))
+@click.option('-c', '--time_limit', default='24h', callback=lambda ctx, param, value: pytimeparse.parse(value))
 @click.option('-r', '--min_rating')
 @click.option('-s', '--max_size', type=click.IntRange(min=1), default=3000,
               help="Posts with larger images (width or height) will not been processed")
