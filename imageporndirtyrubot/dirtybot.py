@@ -8,11 +8,11 @@ import requests
 from PIL import Image
 
 from imageporndirtyrubot import dirty, google
-from imageporndirtyrubot.dirty import DirtyCantLoginException
-from imageporndirtyrubot.exception import APIException, GoogleCaptchaAPIException, DirtyCantLoginException
+from imageporndirtyrubot.exception import APIException
+
 
 DEFAULT_TEMPLATE = u"""\
-Я нашел картинку лучшего качества: <a href="${image_url}">url</a> (${width} x ${height}, ${size} kB)
+Я нашел картинку лучшего качества: <a href="${image_url}">url</a> (${width} x ${height})
 <img src="${image_url}">
 Это сообщение опубликовано <a href="https://github.com/ilyatikhonov/imageporndirtyrubot">роботом</a>, который призван помочь найти картинки лучшего качества.
 """
@@ -42,42 +42,26 @@ def find_and_post_higher_resolution_images(
     )
 
     for post in latest_domain_posts:
-        data = post.get('data', {})
-        media = data.get('media')
-        if not data.get('type') == 'link':
+        if post['data']['type'] != 'link':
             continue
 
-        link = data.get('link', {})
+        if not post.get('data', {}).get('media', {}).get('thumbnails', {}).get('original'):
+            continue
 
-        if media and media.get('type') == 'image':
-            # Link post wih attecjed image
-            image_size = (media.get('width'), media.get('height'))
-            image_url = media.get('url')
-        elif not media and link.get('type') == 'image':
-            continue
-            # No posts with small images
-            image_url = link.get('url')
-            try:
-                image = Image.open(BytesIO(requests.get(image_url).content))
-            except IOError:
-                continue
-        else:
-            continue
+        src_image_url = post['data']['media']['thumbnails']['original']['url']
+        src_width = post['data']['media']['thumbnails']['original']['width']
+        src_height = post['data']['media']['thumbnails']['original']['height']
 
         if skip_posts_with_my_comments:
-            my_comment_found = False
             for comment in dirty.get_post_comments(post['id'], auth_headers=dirty_auth):
                 if comment.get('user', {}).get('login') == username:
-                    my_comment_found = True
-                    break
-
-            if my_comment_found:
-                continue
+                    # комментарий найден, проходим мимо
+                    continue
 
         new_image_url, new_image_size = google.find_higher_resolution_image(
-            media.get('url'),
-            min_width=media.get('width') * min_increase,
-            min_height=media.get('height') * min_increase
+            src_image_url,
+            min_width=src_width * min_increase,
+            min_height=src_height * min_increase
         )
 
         if not new_image_url:
