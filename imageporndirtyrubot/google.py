@@ -29,6 +29,9 @@ GOOGLE_BASE_URL = 'https://www.google.com/'
 GOOGLE_SEARCH_BY_ENDPOINT = 'http://images.google.com/searchbyimage?hl=en&image_url={}'
 
 
+GOOGLE_SUSPICION = 'Our systems have detected unusual traffic from your computer network'
+
+
 def raw_request(url, referer):
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -46,7 +49,8 @@ def raw_request(url, referer):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        print url
+        if GOOGLE_SUSPICION in e.response.content:
+            raise APIException('гугл нас вычислил. валим отсюда!')
         raise APIException('что-то пошло не так в гугле')
 
     soup = BeautifulSoup(response.content, 'html5lib')
