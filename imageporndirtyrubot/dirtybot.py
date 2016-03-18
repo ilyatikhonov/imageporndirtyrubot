@@ -45,12 +45,16 @@ def find_and_post_higher_resolution_images(
         if post['data']['type'] != 'link':
             continue
 
-        if not post.get('data', {}).get('media', {}).get('thumbnails', {}).get('original'):
+        if post['data']['link'] and post['data']['link']['thumbnails']:
+            thumbnails = post['data']['link']['thumbnails']
+        elif post['data']['media'] and post['data']['media']['thumbnails']:
+            thumbnails = post['data']['media']['thumbnails']
+        else:
             continue
 
-        src_image_url = post['data']['media']['thumbnails']['original']['url']
-        src_width = post['data']['media']['thumbnails']['original']['width']
-        src_height = post['data']['media']['thumbnails']['original']['height']
+        src_image_url = thumbnails['original']['url']
+        src_width = thumbnails['original']['width']
+        src_height = thumbnails['original']['height']
 
         if skip_posts_with_my_comments:
             for comment in dirty.get_post_comments(post['id'], auth_headers=dirty_auth):

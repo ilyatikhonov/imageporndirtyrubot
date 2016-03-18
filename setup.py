@@ -19,7 +19,6 @@ requirements = [
     'beautifulsoup4==4.4.1',
     'Click==6.3',
     'pytimeparse==1.1.5',
-    'Pillow==3.1.1',
     'html5lib==0.9999999',
 ]
 
